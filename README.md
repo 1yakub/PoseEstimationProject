@@ -1,6 +1,7 @@
 # Pose-Estimated Gym Monitoring System
 
-![ezgif-6-19e3e5b99e](https://github.com/1yakub/PoseEstimationProject/assets/28190921/e0e21dd6-6fe4-47b0-9ec3-dbeb56e81064)
+![ezgif-6-a18b8a2bb2](https://github.com/1yakub/PoseEstimationProject/assets/28190921/08d9239c-203e-412b-b92e-de8c904396e8)
+
 
 A real-time posture correction system using pose estimation to enhance gym workouts and promote safe exercise practices.
 
