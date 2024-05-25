@@ -1,6 +1,6 @@
 # Pose-Estimated Gym Monitoring System
 
-[![[Project Video or GIF](https://www.facebook.com/watch/?v=2735032260077044)]](link-to-your-demo-video-or-gif) 
+![ezgif-6-19e3e5b99e](https://github.com/1yakub/PoseEstimationProject/assets/28190921/e0e21dd6-6fe4-47b0-9ec3-dbeb56e81064)
 
 A real-time posture correction system using pose estimation to enhance gym workouts and promote safe exercise practices.
 
@@ -43,7 +43,8 @@ This project addresses the challenge of incorrect exercise form, a common issue 
 
 ## Project Demo
 
-[[Include a link to a video demonstrating your project in action](https://github.com/1yakub/PoseEstimationProject/blob/master/AITrainer/aitrainer-demo.jpg)]
+![aitrainer-demo](https://github.com/1yakub/PoseEstimationProject/assets/28190921/98047040-1659-478d-8343-896db9106e93)
+
 
 ## Contributions
 
