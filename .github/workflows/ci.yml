@@ -63,4 +63,7 @@ jobs:
     needs: image
     runs-on: ubuntu-latest
     steps:
-      - run: curl --fail --silent --show-error -X POST "${{ secrets.COOLIFY_DEPLOY_URL }}" -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+      - name: Ask Coolify to pull and restart
+        run: |
+          curl --fail --silent --show-error -X POST "${{ secrets.COOLIFY_DEPLOY_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
