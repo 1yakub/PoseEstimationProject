@@ -1,56 +1,78 @@
-# Pose-Estimated Gym Monitoring System
+# Pose monitor
 
-![ezgif-6-a18b8a2bb2](https://github.com/1yakub/PoseEstimationProject/assets/28190921/08d9239c-203e-412b-b92e-de8c904396e8)
+A rep counter that reads your body. A camera frame goes to a pose model, the model returns 33
+body landmarks, the angle at one joint is measured, and a rep is counted when that angle sweeps
+its full range and comes back. Two exercises: bicep curl at the elbow, squat at the knee.
 
+Two versions share the same rule:
 
-A real-time posture correction system using pose estimation to enhance gym workouts and promote safe exercise practices.
+- **Browser demo**, live at **[pose.yakubhossain.dev](https://pose.yakubhossain.dev)**. The
+  pose model runs as WebAssembly on your device. The video never leaves your computer and the
+  server only hands out static files.
+- **Python app** (`AITrainer.py`) for a desktop with a webcam, with a headless mode for
+  files and tests.
 
-## Project Overview
+![Browser demo](docs/screenshots/home.png)
 
-This project addresses the challenge of incorrect exercise form, a common issue in gyms that can lead to injuries. By leveraging pose estimation technology, we've developed a system that provides users with real-time feedback on their posture during workouts. This helps individuals perform exercises correctly, reducing the risk of injury and maximizing the effectiveness of their training.
+## How the count works
 
-## Key Features
+Three landmarks make a joint: shoulder, elbow, wrist for the curl; hip, knee, ankle for the
+squat. The angle at the middle point is the measurement. It is mapped to a range of motion
+from 0 to 100 percent (curl: 160 degrees is 0, 50 degrees is 100; squat: 165 to 70). A rep
+has two halves: reaching the top (99 percent or more), then returning (1 percent or less).
+Both sides of the body are tried on every frame and the side the camera sees best wins.
+Landmarks below 0.5 visibility are ignored, so a hidden joint never counts.
 
-* **Real-time Pose Estimation:** Utilizes MediaPipe, a powerful computer vision library, to accurately detect and track key body landmarks in real time.
-* **Posture Correction Feedback:** Provides immediate visual feedback on a screen, guiding users to adjust their posture for optimal form.
-* **Customizable Pose Database:** Includes a database of reference poses for various exercises, allowing users to select and practice specific movements.
-* **User-Friendly Interface:** Offers an intuitive interface for easy navigation and exercise selection.
-* **Future Enhancement:** Planned integration of wireless headset feedback for a more immersive and hands-free experience.
+The same constants live in `AITrainer.py` and `web/trainer.js`. The Python tests cover the
+counting rule, the angle maths, a headless video run and the layout on a small frame.
 
-## Technical Details
+## Browser demo
 
-* **Programming Language:** Python
-* **Libraries:** MediaPipe, OpenCV
-* **Dataset:** Custom pose dataset focused on Bangladeshi and Indian Subcontinent ethnicities.
+```
+web/
+  index.html      the page
+  styles.css      design: a measuring instrument, not a gym poster
+  trainer.js      camera, pose model, angle, rep count, canvas overlay
+  fetch-assets.sh downloads the MediaPipe runtime and the model (about 28 MB, not in git)
+  fonts/          Archivo and IBM Plex Mono, self hosted
+```
 
-## How It Works
+Run it locally with any static server (the WebAssembly runtime needs http, not a file path):
 
-1. **Capture:** The system captures video input from a smartphone or computer camera.
-2. **Pose Detection:** MediaPipe's pose estimation model identifies key body joints and their coordinates.
-3. **Geometric Analysis:** The system compares the detected pose with reference poses from the database.
-4. **Feedback:** Real-time feedback is provided on the screen, highlighting any deviations from the correct posture.
+```bash
+cd web && bash fetch-assets.sh && python -m http.server 8000
+```
 
-## Getting Started
+Open http://localhost:8000, allow the camera, pick an exercise. Without a camera, load a
+video file. If the local runtime files are missing, the page falls back to the jsDelivr CDN
+and Google's model host.
 
-1. **Clone the Repository:** `git clone https://github.com/1yakub/PoseEstimationProject`
-2. **Install Dependencies:** `pip install -r requirements.txt`
-3. **Run the Application:** `python main.py`
+## Python app
 
-## Future Enhancements
+```bash
+pip install -r requirements.txt
+python main.py --exercise curl            # webcam
+python main.py --exercise squat --source clip.mp4 --out counted.mp4 --headless
+python -m pytest -q tests
+```
 
-* **3D Pose Estimation:** Incorporate depth data for more accurate posture analysis.
-* **Exercise Recommendations:** Suggest exercises based on individual fitness goals and progress.
-* **Gamification:** Introduce gamified elements to make workouts more engaging.
+Needs Python 3.12 and a current `mediapipe` (the Tasks API). The model downloads on first
+run.
 
-## Project Demo
+## Deploy
 
-![aitrainer-demo](https://github.com/1yakub/PoseEstimationProject/assets/28190921/98047040-1659-478d-8343-896db9106e93)
+Every push to `main` runs the Python tests, builds the nginx image for arm64 and amd64
+(fetching the runtime and model during the build), pushes it to
+`ghcr.io/1yakub/pose-monitor`, and asks Coolify to pull and restart. The image serves
+`web/` with long cache headers on the runtime, model and fonts, and the right types for
+WebAssembly and ES modules.
 
+## History
 
-## Contributions
+The 2023 version ran on the MediaPipe Solutions API, which Google removed; it could not
+start on any current release. In August 2026 it was rewritten on MediaPipe Tasks with tests,
+and in September 2026 the browser demo was finished and deployed.
 
-Contributions are welcome! Please fork the repository and submit a pull request with your proposed changes.
+## License
 
-## Contact
-
-Md. Yakub Hossain - yakub7788@gmail.com
+MIT. See [LICENSE](LICENSE).

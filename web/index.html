@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rep Counter — pose estimated gym monitoring</title>
+<meta name="description" content="A browser demo that reads 33 body landmarks from your camera, measures the angle at your elbow or knee, and counts the rep. Runs entirely on your device.">
+<meta name="theme-color" content="#101418">
+
+<meta property="og:title" content="Rep Counter — pose estimated gym monitoring">
+<meta property="og:description" content="Measures the angle at your joint and counts the rep, in the browser. The video never leaves your device.">
+<meta property="og:type" content="website">
+
+<link rel="preload" href="fonts/Archivo-400_900-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip" href="#instrument">Skip to the demo</a>
+
+<header class="masthead">
+  <div class="wrap masthead-in">
+    <span class="mark">
+      <span class="mark-glyph" aria-hidden="true"></span>
+      Rep&nbsp;Counter
+    </span>
+    <nav class="mast-nav">
+      <a href="#how">How it works</a>
+      <a href="#measures">What it measures</a>
+      <a href="https://github.com/1yakub/PoseEstimationProject">Source</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero wrap">
+    <p class="eyebrow">Computer vision · runs on your device</p>
+    <h1>Every rep,<br>measured at the joint.</h1>
+    <p class="lede">
+      Turn on your camera and this page finds 33 landmarks on your body, measures the
+      angle where two limbs meet, and counts a rep when you complete the range. The
+      video is processed in your browser and never leaves your device.
+    </p>
+  </section>
+
+  <section class="wrap" id="instrument" tabindex="-1">
+    <div class="rig">
+
+      <div class="stage">
+        <div class="stage-frame">
+          <video id="video" playsinline muted></video>
+          <canvas id="overlay"></canvas>
+
+          <div class="stage-empty" id="stageEmpty">
+            <span class="stage-empty-glyph" aria-hidden="true"></span>
+            <p class="stage-empty-title">The camera is off</p>
+            <p class="stage-empty-note">Turn it on to be measured live, or load a video file to watch it work.</p>
+          </div>
+
+          <p class="stage-status" id="stageStatus" role="status" aria-live="polite"></p>
+          <span class="stage-badge" id="stageBadge" hidden>On device</span>
+        </div>
+
+        <div class="controls">
+          <button class="btn btn-primary" id="btnCamera" type="button">Turn on camera</button>
+          <button class="btn" id="btnFile" type="button">Load a video file</button>
+          <input type="file" id="fileInput" accept="video/*" hidden>
+          <button class="btn btn-quiet" id="btnReset" type="button">Reset count</button>
+        </div>
+      </div>
+
+      <aside class="readout" aria-label="Live measurements">
+
+        <div class="exercise" role="group" aria-label="Exercise">
+          <button class="ex is-on" data-exercise="curl" type="button">Bicep curl</button>
+          <button class="ex" data-exercise="squat" type="button">Squat</button>
+        </div>
+
+        <div class="reps">
+          <span class="label">Reps</span>
+          <output class="reps-value" id="repsValue">0</output>
+        </div>
+
+        <div class="rom">
+          <div class="rom-head">
+            <span class="label">Range of motion</span>
+            <span class="rom-pct mono" id="romPct">0%</span>
+          </div>
+          <div class="rom-track">
+            <div class="rom-fill" id="romFill"></div>
+            <span class="rom-tick" style="left:25%"></span>
+            <span class="rom-tick" style="left:50%"></span>
+            <span class="rom-tick" style="left:75%"></span>
+          </div>
+        </div>
+
+        <dl class="stats">
+          <div class="stat">
+            <dt class="label">Joint angle</dt>
+            <dd class="stat-v mono" id="statAngle">—</dd>
+          </div>
+          <div class="stat">
+            <dt class="label">Joint</dt>
+            <dd class="stat-v mono" id="statJoint">Elbow</dd>
+          </div>
+          <div class="stat">
+            <dt class="label">Tracking</dt>
+            <dd class="stat-v mono" id="statFps">—</dd>
+          </div>
+        </dl>
+
+        <p class="form-state" id="formState" role="status" aria-live="polite">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="formText">Waiting for a body in frame</span>
+        </p>
+      </aside>
+
+    </div>
+  </section>
+
+  <section class="wrap section" id="how">
+    <h2 class="sec-title">How it works</h2>
+    <p class="sec-lede">Four steps, in the order they run, about thirty times a second.</p>
+    <ol class="steps">
+      <li>
+        <span class="step-n mono">01</span>
+        <h3>Capture</h3>
+        <p>The browser reads frames from your camera. No frame is uploaded, so the demo works the same on a locked down machine.</p>
+      </li>
+      <li>
+        <span class="step-n mono">02</span>
+        <h3>Landmarks</h3>
+        <p>A BlazePose model compiled to WebAssembly places 33 points on your body and reports how confident it is about each one.</p>
+      </li>
+      <li>
+        <span class="step-n mono">03</span>
+        <h3>Angle</h3>
+        <p>Three landmarks make a joint. The angle between the two limbs is the measurement, drawn as an arc on the joint itself.</p>
+      </li>
+      <li>
+        <span class="step-n mono">04</span>
+        <h3>Rep</h3>
+        <p>When the angle sweeps the full range and comes back, that is one rep. A half range movement counts for nothing.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="wrap section" id="measures">
+    <h2 class="sec-title">What it measures</h2>
+    <p class="sec-lede">The same joints and the same thresholds as the Python version in the repository.</p>
+    <div class="table-scroll">
+      <table class="spec">
+        <thead>
+          <tr><th>Exercise</th><th>Joint</th><th>Landmarks</th><th>Counted range</th></tr>
+        </thead>
+        <tbody class="mono">
+          <tr>
+            <td>Bicep curl</td><td>Elbow</td>
+            <td>shoulder 11 → elbow 13 → wrist 15</td>
+            <td>160° down to 50°</td>
+          </tr>
+          <tr>
+            <td>Squat</td><td>Knee</td>
+            <td>hip 23 → knee 25 → ankle 27</td>
+            <td>165° down to 70°</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Both sides are tried. If your left arm is out of frame the count follows your right,
+      and a landmark the model is unsure about is dropped rather than guessed.
+    </p>
+  </section>
+
+  <section class="wrap section" id="built">
+    <h2 class="sec-title">Built with</h2>
+    <ul class="chips">
+      <li>MediaPipe Tasks Vision</li>
+      <li>WebAssembly</li>
+      <li>Canvas 2D</li>
+      <li>Python</li>
+      <li>OpenCV</li>
+      <li>Docker</li>
+    </ul>
+    <p class="note">
+      The desktop version in the repository is Python and OpenCV and counts the same reps
+      from a webcam or a video file. This page is the same pipeline moved into the browser
+      so it costs nothing to host and nothing to run.
+    </p>
+    <p class="links">
+      <a href="https://github.com/1yakub/PoseEstimationProject">Source on GitHub</a>
+      <a href="https://yakubhossain.dev">yakubhossain.dev</a>
+    </p>
+  </section>
+
+</main>
+
+<footer class="wrap foot">
+  <span>Md. Yakub Hossain</span>
+  <span class="mono">Dhaka, Bangladesh</span>
+</footer>
+
+<script type="module" src="trainer.js"></script>
+</body>
+</html>

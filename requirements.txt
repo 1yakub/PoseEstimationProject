@@ -1,0 +1,8 @@
+# Desktop app. Tested on Python 3.12 with these versions.
+mediapipe>=1.0.0
+opencv-python>=4.10
+numpy>=1.26
+
+# On a headless machine (server, WSL without a display, CI) swap the line
+# above for opencv-python-headless, which drops the GUI dependencies:
+#   pip install opencv-python-headless

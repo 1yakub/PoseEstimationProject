@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Editors
+.idea/
+.vscode/
+
+# Downloaded model weights, fetched on first run
+models/*.task
+models/*.part
+
+# Local output
+*.mp4
+!web/assets/*.mp4
+annotated.*
+
+# fetched at build time by web/fetch-assets.sh (about 28 MB)
+web/vendor/
+web/models/
